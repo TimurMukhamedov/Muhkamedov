@@ -1,0 +1,43 @@
+import re
+
+# Словарь для перевода цифр в слова
+digits_to_words = {
+    '0': 'ноль',
+    '1': 'один',
+    '2': 'два',
+    '3': 'три',
+    '4': 'четыре',
+    '5': 'пять',
+    '6': 'шесть',
+    '7': 'семь',
+    '8': 'восемь',
+    '9': 'девять'
+}
+
+def number_to_words(number):
+    """Преобразует число в строку, где каждая цифра представлена прописью."""
+    return ' '.join(digits_to_words[digit] for digit in str(number))
+
+def read_and_process_file(file_path):
+    with open('input.txt', 'r') as file:
+        content = file.read()
+
+    # Регулярное выражение для поиска двоичных чисел
+    binary_numbers = re.findall(r'\b[01]+\b', content)
+
+    # Преобразование двоичных чисел в десятичные
+    decimal_numbers = [int(bn, 2) for bn in binary_numbers if int(bn, 2) <= 1024]
+
+    if not decimal_numbers:
+        print("No valid binary numbers found.")
+        return
+
+    # Нахождение минимального числа
+    min_number = min(decimal_numbers)
+
+    # Вывод минимального числа прописью
+    print(f"Минимальное число: {min_number} ({number_to_words(min_number)})")
+
+# Пример использования
+file_path = 'input.txt'
+read_and_process_file(file_path)
