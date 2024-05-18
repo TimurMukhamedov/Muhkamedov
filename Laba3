@@ -1,0 +1,69 @@
+import numpy as np
+
+# Функция для создания подматрицы размером KxK
+def create_submatrix(K, fill_type='random'):
+    if fill_type == 'random':
+        return np.random.randint(-10, 11, (K, K))
+    else:
+        # Целенаправленное заполнение для тестирования
+        return np.array([[4, 1, -5, 7],
+                         [0, -3, 2, 8],
+                         [-2, 6, 0, -1],
+                         [3, -4, 5, 0]])
+
+# Функция для создания матрицы A размером NxN из подматриц B, C, D, E
+def create_matrix(K, N, fill_type='random'):
+    B = create_submatrix(K, fill_type)
+    C = create_submatrix(K, fill_type)
+    D = create_submatrix(K, fill_type)
+    E = create_submatrix(K, fill_type)
+
+    A = np.zeros((N, N), dtype=int)
+    
+    A[:K, :K] = B
+    A[:K, K:] = C
+    A[K:, :K] = D
+    A[K:, K:] = E
+
+    return A, B, C, D, E
+
+# Функция для создания матрицы F на основе условий задачи
+def create_F(B, C, D, E):
+    K = B.shape[0]
+    F = np.zeros_like(B)
+
+    num_zeros_nech_stolb_B = np.sum((B[:, ::2] == 0))
+    sum_even_rows_1_area = np.sum(B[::2, :K//2])
+
+    if num_zeros_nech_stolb_B > sum_even_rows_1_area:
+        F = np.copy(C)
+        F[:, :K//2], F[:, K//2:] = C[:, K//2:], C[:, :K//2]
+    else:
+        F = np.copy(D)
+        F[:, :K//2], F[:, K//2:] = E[:, K//2:], E[:, :K//2]
+    
+    return F
+
+# Основная функция для выполнения всех операций
+def main():
+    K = int(input("Введите число K: "))
+    N = 2 * K
+
+    fill_type = 'random'  # Измените на 'specific' для целенаправленного заполнения
+    A, B, C, D, E = create_matrix(K, N, fill_type)
+    
+    F = create_F(B, C, D, E)
+    
+    print("Матрица A:")
+    print(A)
+    
+    print("Матрица F:")
+    print(F)
+    
+    result = A @ np.kron(np.eye(2), F) - K * np.kron(np.eye(2), F).T
+    
+    print("Результат A*F - K*F^T:")
+    print(result)
+
+if __name__ == "__main__":
+    main()
