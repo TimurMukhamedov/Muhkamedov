@@ -19,8 +19,8 @@ def number_to_words(n):
 
 
 def is_valid_binary(s):
-    """Проверяет, является ли строка корректным двоичным числом (без ведущих нулей, кроме 0)"""
-    return all(c in '01' for c in s) and (s == '0' or not s.startswith('0'))
+    """Проверяет, является ли строка корректным двоичным числом"""
+    return bool(s) and all(c in '01' for c in s)
 
 
 def process_file(filename):
@@ -30,7 +30,7 @@ def process_file(filename):
 
     with open(filename, 'r') as file:
         for line in file:
-            for token in line.split():
+            for token in line.strip().split():
                 if not is_valid_binary(token):
                     # Если токен не двоичное число - завершаем текущую последовательность
                     if current_sequence:
@@ -41,12 +41,15 @@ def process_file(filename):
 
                 decimal = int(token, 2)
 
-                if decimal > 1024:
-                    # Если число превышает 1024 - завершаем последовательность
+                if decimal >= 1024:  # ИСПРАВЛЕНО: >= вместо >
+                    # Если число превышает или равно 1024 - завершаем последовательность
                     if current_sequence:
                         print(number_to_words(min(current_sequence)))
                         current_sequence = []
                         prev_number = None
+                    # Обрабатываем число 1024 отдельно
+                    if decimal == 1024:
+                        print(number_to_words(1024))
                     continue
 
                 if prev_number is None or decimal > prev_number:
