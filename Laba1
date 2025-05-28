@@ -1,5 +1,5 @@
-# Словарь для преобразования цифр числа в текстовый вид
-digit_to_text = {
+# Словарь для перевода цифр в слова
+digit_to_word = {
     '0': 'ноль',
     '1': 'один',
     '2': 'два',
@@ -12,43 +12,59 @@ digit_to_text = {
     '9': 'девять'
 }
 
-# Функция для преобразования числа в текстовый вид
-def number_to_text(number):
-    return ' '.join(digit_to_text[digit] for digit in number)
 
-# Открываем файл для чтения
-with open('input.txt', 'r') as file:
-    # Инициализируем переменные
-    current_number = ''
-    min_number = 1024
+def number_to_words(n):
+    """Переводит число в слова (каждую цифру отдельно)"""
+    return ' '.join(digit_to_word[d] for d in str(n))
 
-    # Читаем символы из файла по одному
-    while True:
-        char = file.read(1)
 
-        # Если символ - цифра, добавляем его к текущему числу
-        if char.isdigit():
-            current_number += char
+def is_valid_binary(s):
+    """Проверяет, является ли строка корректным двоичным числом (без ведущих нулей, кроме 0)"""
+    return all(c in '01' for c in s) and (s == '0' or not s.startswith('0'))
 
-        # Если символ - не цифра или файл закончился
-        else:
-            # Если текущее число не пустое, преобразуем его в числовой вид
-            if current_number:
-                number = int(current_number)
 
-                # Если число не превышает 1024, выводим его прописью
-                if number <= 1024:
-                    print(number_to_text(str(number)))
+def process_file(filename):
+    """Обрабатывает файл и выводит результаты"""
+    current_sequence = []
+    prev_number = None
 
-                    # Обновляем минимальное число, если текущее число меньше
-                    min_number = min(min_number, number)
+    with open(filename, 'r') as file:
+        for line in file:
+            for token in line.split():
+                if not is_valid_binary(token):
+                    # Если токен не двоичное число - завершаем текущую последовательность
+                    if current_sequence:
+                        print(number_to_words(min(current_sequence)))
+                        current_sequence = []
+                        prev_number = None
+                    continue
 
-            # Если файл закончился, выходим из цикла
-            if not char:
-                break
+                decimal = int(token, 2)
 
-            # Сбрасываем текущее число
-            current_number = ''
+                if decimal > 1024:
+                    # Если число превышает 1024 - завершаем последовательность
+                    if current_sequence:
+                        print(number_to_words(min(current_sequence)))
+                        current_sequence = []
+                        prev_number = None
+                    continue
 
-# Выводим минимальное число прописью
-print(f'Минимальное число: {number_to_text(str(min_number))}')
+                if prev_number is None or decimal > prev_number:
+                    # Продолжаем последовательность
+                    current_sequence.append(decimal)
+                    prev_number = decimal
+                else:
+                    # Если последовательность нарушена - выводим минимум и начинаем новую
+                    if current_sequence:
+                        print(number_to_words(min(current_sequence)))
+                    current_sequence = [decimal]
+                    prev_number = decimal
+
+    # Выводим минимум для последней последовательности (если есть)
+    if current_sequence:
+        print(number_to_words(min(current_sequence)))
+
+
+# Запуск обработки файла input.txt
+if __name__ == "__main__":
+    process_file("input.txt")
